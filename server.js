@@ -43,6 +43,17 @@ app.get('/api/timetable/search', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+// Admin - Add route
+app.post('/api/admin/route', async (req, res) => {
+  const { busNum, operator, origin, dest, depart, arrive, days } = req.body;
+  try {
+    const [bus] = await db.query('INSERT INTO buses (bus_number, operator) VALUES (?, ?)', [busNum, operator]);
+    const [route] = await db.query('INSERT INTO routes (bus_id, origin, destination) VALUES (?, ?, ?)', [bus.insertId, origin, dest]);
+    await db.query('INSERT INTO timetable (route_id, departure_time, arrival_time, days) VALUES (?, ?, ?, ?)', [route.insertId, depart, arrive, days]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Running on port ${PORT}`));
